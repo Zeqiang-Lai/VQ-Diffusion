@@ -104,6 +104,10 @@ class VQ_Diffusion():
         condition = text
 
         str_cond = str(condition)
+        # if os.path.exists(os.path.join(save_root, str_cond)):
+        #     return
+        if len(str_cond) > 100:
+            str_cond = str_cond[:100]
         save_root_ = os.path.join(save_root, str_cond)
         os.makedirs(save_root_, exist_ok=True)
 
@@ -133,12 +137,16 @@ class VQ_Diffusion():
 
 
 if __name__ == '__main__':
-    # VQ_Diffusion = VQ_Diffusion(config='OUTPUT/pretrained_model/config_text.yaml', path='OUTPUT/pretrained_model/human_pretrained.pth')
-    # VQ_Diffusion.inference_generate_sample_with_condition("a man with beard",truncation_rate=0.86, save_root="RESULT",batch_size=2,fast=2)  # fast is a int from 2 to 10
+    # ckpt = 'OUTPUT/pretrained_model/cub_pretrained.pth'
+    # config = 'OUTPUT/pretrained_model/config_text.yaml'
+    ckpt = 'OUTPUT/pretrained_model/cub200/000599e_664199iter.pth'
+    config = 'configs/cub200_s.yaml'
+    VQ_Diffusion = VQ_Diffusion(config=config, path=ckpt)
+    VQ_Diffusion.inference_generate_sample_with_condition("a red bird",truncation_rate=0.86, save_root="RESULT",batch_size=2,fast=2)  # fast is a int from 2 to 10
     # VQ_Diffusion.inference_generate_sample_with_condition("a beautiful smiling woman",truncation_rate=0.85, save_root="RESULT",batch_size=8)
 
-    VQ_Diffusion = VQ_Diffusion(config='OUTPUT/pretrained_model/config_imagenet.yaml', path='OUTPUT/pretrained_model/imagenet_pretrained.pth')
-    VQ_Diffusion.inference_generate_sample_with_class(493,truncation_rate=0.86, save_root="RESULT",batch_size=8)
+    # VQ_Diffusion = VQ_Diffusion(config='OUTPUT/pretrained_model/config_imagenet.yaml', path='OUTPUT/pretrained_model/imagenet_pretrained.pth')
+    # VQ_Diffusion.inference_generate_sample_with_class(493,truncation_rate=0.86, save_root="RESULT",batch_size=8)
  
 
 
