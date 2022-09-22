@@ -5,20 +5,19 @@
 # written By Shuyang Gu
 # ------------------------------------------
 
+from image_synthesis.utils.misc import get_model_parameters_info
+from image_synthesis.modeling.build import build_model
+from image_synthesis.utils.io import load_yaml_config
+from PIL import Image
+import torchvision
+import numpy as np
+import argparse
+import cv2
+import torch
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
-import torch
-import cv2
-import argparse
-import numpy as np
-import torchvision
-from PIL import Image
-
-from image_synthesis.utils.io import load_yaml_config
-from image_synthesis.modeling.build import build_model
-from image_synthesis.utils.misc import get_model_parameters_info
 
 class VQ_Diffusion():
     def __init__(self, config, path):
@@ -28,19 +27,19 @@ class VQ_Diffusion():
         self.model_name = self.info['model_name']
         self.model = self.model.cuda()
         self.model.eval()
-        for param in self.model.parameters(): 
-            param.requires_grad=False
+        for param in self.model.parameters():
+            param.requires_grad = False
 
     def get_model(self, ema, model_path, config_path):
-        if 'OUTPUT' in model_path: # pretrained model
+        if 'OUTPUT' in model_path:  # pretrained model
             model_name = model_path.split(os.path.sep)[-3]
-        else: 
+        else:
             model_name = os.path.basename(config_path).replace('.yaml', '')
 
         config = load_yaml_config(config_path)
         model = build_model(config)
         model_parameters = get_model_parameters_info(model)
-        
+
         print(model_parameters)
         if os.path.exists(model_path):
             ckpt = torch.load(model_path, map_location="cpu")
@@ -56,14 +55,14 @@ class VQ_Diffusion():
         print('Model missing keys:\n', missing)
         print('Model unexpected keys:\n', unexpected)
 
-        if ema==True and 'ema' in ckpt:
+        if ema == True and 'ema' in ckpt:
             print("Evaluate EMA model")
             ema_model = model.get_ema_model()
             missing, unexpected = ema_model.load_state_dict(ckpt['ema'], strict=False)
-        
+
         return {'model': model, 'epoch': epoch, 'model_name': model_name, 'parameter': model_parameters}
 
-    def inference_generate_sample_with_class(self, text, truncation_rate, save_root, batch_size,fast=False):
+    def inference_generate_sample_with_class(self, text, truncation_rate, save_root, batch_size, fast=False):
         os.makedirs(save_root, exist_ok=True)
 
         data_i = {}
@@ -83,7 +82,7 @@ class VQ_Diffusion():
                 content_ratio=1,
                 return_att_weight=False,
                 sample_type="top"+str(truncation_rate)+'r',
-            ) # B x C x H x W
+            )  # B x C x H x W
 
         # save results
         content = model_out['content']
@@ -95,7 +94,7 @@ class VQ_Diffusion():
             im = Image.fromarray(content[b])
             im.save(save_path)
 
-    def inference_generate_sample_with_condition(self, texts, truncation_rate, save_root, batch_size,fast=False):
+    def inference_generate_sample_with_condition(self, texts, truncation_rate, save_root, batch_size, fast=False):
         os.makedirs(save_root, exist_ok=True)
 
         data_i = {}
@@ -114,7 +113,7 @@ class VQ_Diffusion():
                 content_ratio=1,
                 return_att_weight=False,
                 sample_type="top"+str(truncation_rate)+add_string,
-            ) # B x C x H x W
+            )  # B x C x H x W
 
         # save results
         content = model_out['content']
@@ -128,6 +127,20 @@ class VQ_Diffusion():
             im.save(save_path)
 
 
+class CUB200TestDatast(torch.utils.data.Dataset):
+    def __init__(self, caption_path):
+        super().__init__()
+        with open(caption_path, 'r') as f:
+            captions = f.readlines()
+            self.captions = [caption.strip() for caption in captions]
+
+    def __len__(self):
+        return len(self.captions)
+
+    def __getitem__(self, idx):
+        return self.captions[idx]
+
+
 if __name__ == '__main__':
     from tqdm import tqdm
 
@@ -139,14 +152,13 @@ if __name__ == '__main__':
         config='OUTPUT/pretrained_model/config_text.yaml',
         path='OUTPUT/pretrained_model/cub_pretrained.pth'
     )
-    
+
     bs = 8
-    batches = [captions[i:i+bs] for i in range(0,len(captions),bs)]
+    batches = [captions[i:i+bs] for i in range(0, len(captions), bs)]
     for batch in tqdm(batches):
         VQ_Diffusion.inference_generate_sample_with_condition(
             batch,
             truncation_rate=0.86,
-            save_root="TEST/cub200_pretrained_nofast",
+            save_root="TEST/cub_pretrained_30k",
             batch_size=8,
         )
-

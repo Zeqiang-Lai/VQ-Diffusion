@@ -28,7 +28,7 @@ class Cub200Dataset(Dataset):
         
         for index in tqdm(range(self.num)):
             name = self.name_list[index]
-            this_text_path = os.path.join(data_root, 'text', 'text', name+'.txt')
+            this_text_path = os.path.join(data_root, 'text', name+'.txt')
             with open(this_text_path, 'r') as f:
                 caption = f.readlines()
             self.caption_dict[name] = caption

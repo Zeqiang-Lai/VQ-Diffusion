@@ -77,7 +77,7 @@ solver:
   base_lr: 3.0e-6
   adjust_lr: none # not adjust lr according to total batch_size
   max_epochs: 400
-  save_epochs: 30
+  save_epochs: 50
   validation_epochs: 400
   sample_iterations: epoch  # epoch #30000      # how many iterations to perform sampling once ?
   print_specific_things: True
@@ -120,13 +120,13 @@ solver:
 
 dataloader:
   # data_root: data
-  data_root: /mnt/blob/datasets/CUB-200
+  data_root: data/cub
   batch_size: 4
   num_workers: 4
   train_datasets: # a list of configures, so we can combine several schedulers
     - target: image_synthesis.data.cub200_dataset.Cub200Dataset
       params:
-        data_root: /mnt/blob/datasets/CUB-200
+        data_root: data/cub
         phase: train
         im_preprocessor_config:
           target: image_synthesis.data.utils.image_preprocessor.DalleTransformerPreprocessor   # ImageNet
@@ -136,7 +136,7 @@ dataloader:
   validation_datasets:
     - target: image_synthesis.data.cub200_dataset.Cub200Dataset
       params:
-        data_root: /mnt/blob/datasets/CUB-200
+        data_root: data/cub
         phase: test
         im_preprocessor_config:
           target: image_synthesis.data.utils.image_preprocessor.DalleTransformerPreprocessor

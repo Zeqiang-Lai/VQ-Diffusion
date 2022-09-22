@@ -354,7 +354,8 @@ class Solver(object):
                ): 
         if path is None:
             path = os.path.join(self.ckpt_dir, 'last.pth')
-
+        
+        assert os.path.exists(path), '{} does not exist'.format(path)
         if os.path.exists(path):
             state_dict = torch.load(path, map_location='cuda:{}'.format(self.args.local_rank))
 
@@ -398,7 +399,8 @@ class Solver(object):
                         self.optimizer_and_scheduler[op_sc_n][k] = op_sc[k]
             
             self.logger.log_info('Resume from {}'.format(path))
-    
+            
+            
     def train_epoch(self):
         self.model.train()
         self.last_epoch += 1
